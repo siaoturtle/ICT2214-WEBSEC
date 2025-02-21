@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Log Monitoring Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #eef;
+      margin: 20px;
+    }
+    .dashboard {
+      max-width: 800px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .log-container {
+      background: #f9f9f9;
+      border: 1px solid #ccc;
+      padding: 10px;
+      height: 400px;
+      overflow-y: auto;
+      font-size: 0.9em;
+    }
+    .log-entry {
+      border-bottom: 1px solid #ddd;
+      padding: 5px;
+    }
+    .timestamp {
+      color: #888;
+      margin-right: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard">
+    <div class="header">
+      <h1>Log Monitoring Dashboard</h1>
+    </div>
+    <div class="log-container" id="logContainer">
+      <!-- Log entries will appear here -->
+    </div>
+  </div>
+  
+  <script>
+    // Select the log container
+    const logContainer = document.getElementById('logContainer');
+
+    // Simulated log messages for demonstration
+    const messages = [
+      'User logged in',
+      'Error: Unable to connect to database',
+      'Request to /api/data succeeded',
+      'Warning: High memory usage detected',
+      'Scheduled job executed successfully'
+    ];
+
+    // Function to generate a new log entry
+    function generateLogEntry() {
+      const now = new Date().toLocaleTimeString();
+      const randomMsg = messages[Math.floor(Math.random() * messages.length)];
+      const logEntry = document.createElement('div');
+      logEntry.className = 'log-entry';
+      logEntry.innerHTML = `<span class="timestamp">${now}</span>${randomMsg}`;
+      
+      // Append the new log entry to the container
+      logContainer.appendChild(logEntry);
+      // Auto-scroll to the bottom to show the newest log
+      logContainer.scrollTop = logContainer.scrollHeight;
+    }
+
+    // Simulate generating a new log entry every 2 seconds
+    setInterval(generateLogEntry, 2000);
+  </script>
+</body>
+</html>
