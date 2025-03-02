@@ -8,18 +8,8 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
     exit;
 }
 
-// Path to the log file
+// Path to log file
 $logFile = __DIR__ . '/../ssrf_attempts.log';
-
-function isDNSRebinding($url) {
-    $host = parse_url($url, PHP_URL_HOST);
-    if (!$host) return false;
-
-    $ip = gethostbyname($host);
-    $internalPattern = '/\b(127\.0\.0\.1|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3}|::1|fc00::|fd00::|fe80::|fec0::)\b/';
-
-    return preg_match($internalPattern, $ip);
-}
 
 // Function to analyze SSRF likelihood
 function analyzeSSRFLikelihood($requestBlock) {
@@ -40,39 +30,35 @@ function analyzeSSRFLikelihood($requestBlock) {
     if (preg_match($suspiciousHostnamePattern, $requestBlock) || preg_match($suspiciousHostnamePattern, $requestBlockDecoded)) {
         $score++;
     }
-   if (isDNSRebinding($requestBlock)) {
-    $score += 2; // DNS rebinding is critical
-}
-if (isDNSRebinding($requestBlock)) {
-    $score += 2; // DNS rebinding is critical
-}
-
 
     return $score;
 }
 
-// Read log file and group log entries by timestamp
-$logs = [];
+// Read log file and group logs
+$logsPerPage = 30;
+$groupedLogs = [];
+$currentTimestamp = "";
+$currentRequest = [];
+
 if (file_exists($logFile) && is_readable($logFile)) {
-    $rawLogs = file($logFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES); // Read lines
-    $groupedLogs = [];
-    $currentTimestamp = "";
-    $currentRequest = "";
+    $rawLogs = file($logFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 
     foreach ($rawLogs as $line) {
-        // Detect timestamp (assumes format: [YYYY-MM-DD HH:MM:SS])
+        $line = trim($line);
+
+        // Detect timestamp (format: [YYYY-MM-DD HH:MM:SS])
         if (preg_match('/^\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]/', $line)) {
             if (!empty($currentRequest)) {
                 $groupedLogs[] = [
                     "timestamp" => $currentTimestamp,
-                    "request" => $currentRequest,
-                    "ssrf_likelihood" => analyzeSSRFLikelihood($currentRequest) . " out of 3"
+                    "request" => implode("\n", $currentRequest),
+                    "ssrf_likelihood" => analyzeSSRFLikelihood(implode("\n", $currentRequest))
                 ];
             }
             $currentTimestamp = $line;
-            $currentRequest = $line . "\n";  // Start new request block
+            $currentRequest = [$line];  // Start new request block
         } else {
-            $currentRequest .= $line . "\n";  // Append log lines to the current request block
+            $currentRequest[] = $line; // Append log lines to array
         }
     }
 
@@ -80,24 +66,30 @@ if (file_exists($logFile) && is_readable($logFile)) {
     if (!empty($currentRequest)) {
         $groupedLogs[] = [
             "timestamp" => $currentTimestamp,
-            "request" => $currentRequest,
-            "ssrf_likelihood" => analyzeSSRFLikelihood($currentRequest) . " out of 3"
+            "request" => implode("\n", $currentRequest),
+            "ssrf_likelihood" => analyzeSSRFLikelihood(implode("\n", $currentRequest))
         ];
     }
 
-    header('Content-Type: application/json');
-    echo json_encode(["logs" => $groupedLogs], JSON_PRETTY_PRINT);
+    // ✅ Reverse logs so latest logs appear first
+    $groupedLogs = array_reverse($groupedLogs);
+
+    // ✅ Implement Pagination (Slice after reversing)
+    $page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
+    $totalLogs = count($groupedLogs);
+    $totalPages = max(1, ceil($totalLogs / $logsPerPage));
+    $offset = ($page - 1) * $logsPerPage;
+    $paginatedLogs = array_slice($groupedLogs, $offset, $logsPerPage);
+
+    // ✅ Return paginated logs
+    echo json_encode([
+        "logs" => $paginatedLogs,
+        "totalLogs" => $totalLogs,
+        "currentPage" => $page,
+        "totalPages" => $totalPages
+    ], JSON_PRETTY_PRINT);
 } else {
     http_response_code(403);
     echo json_encode(["error" => "Log file is not found or unreadable"]);
     exit;
-}
-
-// Automatically scan logs marked with SSRF likelihood >= 2
-foreach ($logs as $log) {
-    if ($log['ssrf_likelihood'] >= 2) {
-        file_get_contents("http://localhost:5000/scan", false, stream_context_create([
-            'http' => ['method' => 'POST', 'header' => 'Content-Type: application/json', 'content' => json_encode(['url' => $log['request']])]
-        ]));
-    }
 }

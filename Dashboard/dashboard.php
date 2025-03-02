@@ -133,6 +133,13 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
         <button type="submit">Generate Report</button>
     </form>
 
+    <div>
+        <button id="prevPage">Previous</button>
+        <span id="currentPage">Page 1</span>
+        <button id="nextPage">Next</button>
+    </div>
+
+
 <!-- Filter Section -->
     <div class="filter-container">
         <label>Filter by Likelihood:</label>
@@ -156,11 +163,37 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
         </tbody>
     </table>
 
+
     <script>
-        function fetchLogs() {
-            fetch('getLogs.php')
+        let currentPage = 1;
+        let totalPages = 1;
+        //const logsPerPage = 30; // Number of logs to display per page
+
+        document.getElementById('prevPage').addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                fetchLogs(currentPage);
+
+            }
+        });
+        document.getElementById('nextPage').addEventListener('click', () => {
+            if (currentPage < totalPages) {
+                currentPage++;
+                fetchLogs(currentPage);
+
+            }
+        });
+        document.addEventListener("DOMContentLoaded", function() {
+            fetchLogs(currentPage);
+        });
+
+        function fetchLogs(page=1) {
+            fetch(`getLogs.php?page=${page}`)
                 .then(response => response.json())
                 .then(data => {
+                    totalPages = data.totalPages; // Store total pages
+                    currentPage = data.currentPage; // Update current page
+
                     const logBody = document.getElementById('logBody');
                     logBody.innerHTML = '';
 
@@ -193,14 +226,25 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
                         `;
                         logBody.appendChild(row);
                     });
+                    updatePaginationControls(currentPage, totalPages); // Update pagination controls
                 })
                 .catch(error => console.error('Error fetching logs:', error));
         }
 
         document.addEventListener("DOMContentLoaded", function() {
-            setInterval(fetchLogs, 5000);
-            fetchLogs();
+            setInterval(() => fetchLogs(currentPage), 5000);
+            fetchLogs(currentPage);
         });
+
+        function updatePaginationControls(current, total) {
+            document.getElementById('currentPage').textContent = `Page ${current} of ${total}`;
+
+            document.getElementById('prevPage').disabled = (current === 1);
+            document.getElementById('nextPage').disabled = (current === total);
+
+            console.log(`Updated pagination: Page ${current} of ${total}`);
+        }
+
     </script>
 </body>
 </html>
