@@ -28,6 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>SSRF Settings</title>
 </head>
 <body>
+    <?php include 'navbar.php'; ?> <!-- Include the navigation bar -->
     <h2>Admin Settings</h2>
     <form method="POST">
         <label>Log Retention (Days):</label>

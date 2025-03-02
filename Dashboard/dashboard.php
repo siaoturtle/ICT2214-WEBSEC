@@ -1,4 +1,3 @@
-GNU nano 7.2                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  dashboard.php                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     M
 <?php
 // dashboard.php - Adding Navigation Menu
 if (session_status() === PHP_SESSION_NONE) {
@@ -129,8 +128,12 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
     <div class="header">
         <h2>SSRF Log Dashboard</h2>
     </div>
+    <!-- Generate Report Button -->
+    <form action="generate_report.php" method="POST">
+        <button type="submit">Generate Report</button>
+    </form>
 
-    <!-- Filter Section -->
+<!-- Filter Section -->
     <div class="filter-container">
         <label>Filter by Likelihood:</label>
         <input type="checkbox" id="filter0" value="0" checked> <label for="filter0">Non-Vulnerable (0 out of 3)</label>
@@ -201,16 +204,3 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-

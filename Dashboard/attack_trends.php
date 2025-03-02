@@ -5,22 +5,19 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
     exit;
 }
 
-// Read the log file
-$logFile = __DIR__ . "/../ssrf_attempts.log";
-$logs = file_exists($logFile) ? file($logFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) : [];
+$logFile = __DIR__ . '/../ssrf_attempts.log';
+$logs = file_exists($logFile) ? array_reverse(file($logFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES)) : [];
 
-$attackCounts = [];
-
+// Extract most attacked endpoints
+$endpointCounts = [];
 foreach ($logs as $log) {
-    preg_match('/\[(\d{4}-\d{2}-\d{2})/', $log, $matches);
-    if (!empty($matches[1])) {
-        $date = $matches[1];
-        $attackCounts[$date] = isset($attackCounts[$date]) ? $attackCounts[$date] + 1 : 1;
+    if (preg_match('/(GET|POST) (.*?) HTTP/', $log, $match)) {
+        $endpoint = $match[2];
+        $endpointCounts[$endpoint] = isset($endpointCounts[$endpoint]) ? $endpointCounts[$endpoint] + 1 : 1;
     }
 }
-
-$dates = array_keys($attackCounts);
-$counts = array_values($attackCounts);
+arsort($endpointCounts);
+$topEndpoints = array_slice($endpointCounts, 0, 5, true);
 ?>
 
 <!DOCTYPE html>
@@ -31,25 +28,30 @@ $counts = array_values($attackCounts);
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <h2>SSRF Attack Trends (Last 7 Days)</h2>
-    <canvas id="attackChart"></canvas>
 
-    <script>
-        const ctx = document.getElementById('attackChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: <?php echo json_encode($dates); ?>,
-                datasets: [{
-                    label: 'SSRF Attacks',
-                    data: <?php echo json_encode($counts); ?>,
-                    borderColor: 'red',
-                    borderWidth: 2,
-                    fill: false
-                }]
-            },
-            options: { responsive: true, scales: { y: { beginAtZero: true } } }
-        });
-    </script>
+<?php include 'navbar.php'; ?> <!-- Keep the navigation bar -->
+
+<h2>SSRF Attack Trends</h2>
+<canvas id="heatmap"></canvas>
+
+<script>
+    const ctx = document.getElementById('heatmap').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: <?php echo json_encode(array_keys($topEndpoints)); ?>,
+            datasets: [{
+                label: 'Attack Count',
+                data: <?php echo json_encode(array_values($topEndpoints)); ?>,
+                backgroundColor: 'red'
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+</script>
+
 </body>
 </html>
