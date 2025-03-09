@@ -3,7 +3,7 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start(); // Only start session if not already started
 }
 
-// Hardcoded credentials (Replace with a secure method)
+// Hardcoded credentials
 $root_user = 'root';
 $root_pass = '2214_Root#@!';
 
