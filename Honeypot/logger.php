@@ -1,8 +1,4 @@
 <?php
-/**
- * logger.php
- * Common helper to log SSRF attempts or suspicious requests
- */
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start(); // Only start session if not already started
@@ -11,11 +7,6 @@ if (session_status() === PHP_SESSION_NONE) {
 // Absolute path to the log file
 $LOG_FILE = __DIR__ . '/ssrf_attempts.log';
 
-/**
- * Logs incoming requests with raw body and relevant metadata
- *
- * @param string $endpoint  The "service" or endpoint name (e.g., 'metadata', 'admin')
- */
 function logRequest($endpoint) {
     global $LOG_FILE;
 
@@ -31,7 +22,7 @@ function logRequest($endpoint) {
     // Headers
     $headers = json_encode(getallheaders(), JSON_UNESCAPED_SLASHES);
 
-    // Query params / POST fields (merged)
+    // Query params / POST fields
     $params = print_r($_REQUEST, true); // for quick debugging, or you can just store JSON
 
     // Raw request body (captures POST data, JSON, XML, anything)
@@ -61,11 +52,7 @@ function logRequest($endpoint) {
     sendTelegramAlert($logEntry);
 }
 
-
-
-/**
- * Function to send Telegram alerts
- */
+// Function to send Tele alerts
 function sendTelegramAlert($message) {
     $telegramToken = "7984166782:AAEt69YVZ6sQ8fVQEjyP5ej4n694cmghMa4"; // Replace with your bot token
     $chatID = "-1002310447627";
