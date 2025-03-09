@@ -8,16 +8,6 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
 $logFile = __DIR__ . '/../ssrf_attempts.log';
 $logs = file_exists($logFile) ? array_reverse(file($logFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES)) : [];
 
-// Extract most attacked endpoints
-$endpointCounts = [];
-foreach ($logs as $log) {
-    if (preg_match('/(GET|POST) (.*?) HTTP/', $log, $match)) {
-        $endpoint = $match[2];
-        $endpointCounts[$endpoint] = isset($endpointCounts[$endpoint]) ? $endpointCounts[$endpoint] + 1 : 1;
-    }
-}
-arsort($endpointCounts);
-$topEndpoints = array_slice($endpointCounts, 0, 5, true);
 ?>
 
 <!DOCTYPE html>
@@ -26,30 +16,73 @@ $topEndpoints = array_slice($endpointCounts, 0, 5, true);
     <meta charset="UTF-8">
     <title>SSRF Attack Trends</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        canvas {
+            width: 90% !important;  /* Make it responsive */
+            max-width: 1000px;      /* Increase max width */
+            height: 500px !important; /* Increase height */
+            margin: auto;
+        }
+    </style>
 </head>
 <body>
 
 <?php include 'navbar.php'; ?> <!-- Keep the navigation bar -->
 
-<h2>SSRF Attack Trends</h2>
-<canvas id="heatmap"></canvas>
+<h2>📊 SSRF Attack Trends by Severity (Per Day)</h2>
+<canvas id="stackedBarChart"></canvas>
 
 <script>
-    const ctx = document.getElementById('heatmap').getContext('2d');
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: <?php echo json_encode(array_keys($topEndpoints)); ?>,
-            datasets: [{
-                label: 'Attack Count',
-                data: <?php echo json_encode(array_values($topEndpoints)); ?>,
-                backgroundColor: 'red'
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: { y: { beginAtZero: true } }
+    function fetchAttackTrends() {
+        fetch('getLogs.php')
+            .then(response => response.json())
+            .then(data => {
+                const attackCounts = data.attackCounts;
+
+                // Extract data for each severity level
+                const days = Object.keys(attackCounts);
+                const nonVulnData = days.map(day => attackCounts[day]['Non-Vulnerable']);
+                const lowData = days.map(day => attackCounts[day]['Low']);
+                const mediumData = days.map(day => attackCounts[day]['Medium']);
+                const highData = days.map(day => attackCounts[day]['High']);
+
+                // Update Chart.js
+                updateChart(days, nonVulnData, lowData, mediumData, highData);
+            })
+            .catch(error => console.error('Error fetching attack trends:', error));
+    }
+
+    let attackChart;
+
+    function updateChart(days, nonVulnData, lowData, mediumData, highData) {
+        const ctx = document.getElementById('stackedBarChart').getContext('2d');
+
+        if (attackChart) {
+            attackChart.destroy();
         }
+
+        attackChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: days,
+                datasets: [
+                    { label: 'Non-Vulnerable', data: nonVulnData, backgroundColor: 'green'},
+                    { label: 'Low Severity', data: lowData, backgroundColor: 'blue' },
+                    { label: 'Medium Severity', data: mediumData, backgroundColor: 'yellow' },
+                    { label: 'High Severity', data: highData, backgroundColor: 'red' }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } }
+            }
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        fetchAttackTrends();
+        setInterval(fetchAttackTrends, 60000); // Update every minute
     });
 </script>
 

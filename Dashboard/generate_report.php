@@ -73,4 +73,3 @@ foreach (array_slice($logs, 0, 10) as $log) {
 
 // Output the PDF
 $pdf->Output('SSRF_Report_' . date("Ymd_His") . '.pdf', 'D'); // 'D' forces download
-?>

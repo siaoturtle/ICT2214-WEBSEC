@@ -128,10 +128,6 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
     <div class="header">
         <h2>SSRF Log Dashboard</h2>
     </div>
-    <!-- Generate Report Button -->
-    <form action="generate_report.php" method="POST">
-        <button type="submit">Generate Report</button>
-    </form>
 
     <div>
         <button id="prevPage">Previous</button>

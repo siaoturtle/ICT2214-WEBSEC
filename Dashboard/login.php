@@ -9,6 +9,7 @@ $root_pass = '2214_Root#@!';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($_POST['username'] === $root_user && $_POST['password'] === $root_pass) {
+        session_regenerate_id(true);
         $_SESSION['authenticated'] = true;
         header("Location: dashboard.php");
         exit;
