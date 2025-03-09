@@ -1,6 +1,7 @@
 # ICT2214-WEBSEC: HONEYSSRF by P2B Group 1.
 
-The **Dashboard** folder contains files relevant to the administrator dashboard of the honeypot. It can only be accessed by the root user and serves as an analysis page to track SSRF requests made to the main site.
+The **Dashboard** folder contains files relevant to the administrator dashboard of the honeypot. It can only be accessed by the root user and serves as an analysis page to track SSRF requests made to the main site. 
+
 The **Honeypot** folder contains files relevant to the actual site that potential attackers have access to.
 
 To access the root account credentials, please view **login.php**
