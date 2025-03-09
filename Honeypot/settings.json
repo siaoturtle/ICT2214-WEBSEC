@@ -1,0 +1,12 @@
+{  
+    "log_retention": 30,
+    "alert_threshold": 3,
+    "enable_notifications": false,
+    "notification_method": "telegram",
+    "webhook_url": "",
+    "honeypot_mode": "log_only",
+    "logging_level": "detailed"
+}
+
+
+
