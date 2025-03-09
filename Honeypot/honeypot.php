@@ -1,13 +1,10 @@
 <?php
-// honeypot.php
-// A simple SSRF honeypot page using a common logger
 
 session_start();
 
 $loggedIn = isset($_SESSION['authenticated']);
 
 require_once __DIR__ . '/logger.php';
-// ^ Adjust the path if logger.php is in a subdirectory
 
 // Process form submission (POST)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -26,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Process direct GET parameter (e.g. ?url=...)
+// Process direct GET parameter
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['url'])) {
     $url = $_GET['url'];
     logRequest($url, 'URL_REQUEST_GET');
