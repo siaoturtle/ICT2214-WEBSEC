@@ -1,5 +1,4 @@
 <?php
-// dashboard.php - Adding Navigation Menu
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
     session_regenerate_id(true);
@@ -25,7 +24,7 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
             overflow-x: hidden;
         }
 
-        /* Navigation Menu */
+        /* Nav Menu */
         .navbar {
             background-color: #333;
             overflow: hidden;
