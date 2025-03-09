@@ -1,9 +1,8 @@
-  GNU nano 7.2                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        contact.php                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 <?php
-// honeypot.php - Interactive SSRF Honeypot
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             contact.php                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 <?php
 session_start();
 $loggedIn = isset($_SESSION['authenticated']);
 
-require_once __DIR__ . '/logger.php'; // Ensure logger.php is included
+require_once __DIR__ . '/logger.php'; 
 
 $response = [];
 $ssrfLikelihood = 0;
@@ -77,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        /* (Your existing styles remain unchanged) */
+
         .header-container { display: flex; justify-content: space-between; align-items: center; }
         .header { background: #ffffff; padding: 1rem 0; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
         .logo { font-weight: 600; font-size: 1.8rem; color: #333; }
@@ -103,7 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .footer p { margin-bottom: 0.5rem; }
         .footer-nav a { color: #bbb; margin: 0 10px; text-decoration: none; font-size: 0.9rem; }
         .footer-nav a:hover { color: white; }
-        /* Message box style */
+
         #message {
             margin-bottom: 1rem;
             font-size: 1.2rem;
@@ -128,12 +127,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 const messageBox = document.getElementById('message');
 
                 if (data.status === 'success') {
-                    // Display success message and clear the form
                     messageBox.style.display = 'block';
                     messageBox.textContent = "Message has been sent!";
                     form.reset();
                 } else {
-                    // In case of an error, display the error message from the server
                     messageBox.style.display = 'block';
                     messageBox.textContent = data.message;
                 }
@@ -164,9 +161,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <section class="contact-form-section">
     <div class="container">
         <h3>Get in Touch</h3>
-        <!-- Message container for feedback -->
         <div id="message"></div>
-        <!-- Note: Removed duplicate onsubmit attributes from individual form-group divs -->
         <form id="contactForm" onsubmit="event.preventDefault(); checkURL();" method="POST" class="contact-form">
             <div class="form-group">
                 <label for="url">Name</label>
