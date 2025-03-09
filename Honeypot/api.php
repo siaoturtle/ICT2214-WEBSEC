@@ -1,8 +1,8 @@
 <?php
-// api.php: Simulated internal API
     require_once __DIR__ . '/logger.php';
     logRequest('api');
-// Return some dummy JSON data
+
+// Return fake JSON data to simulate 
 header('Content-Type: application/json');
 echo json_encode([
     "status" => "success",
